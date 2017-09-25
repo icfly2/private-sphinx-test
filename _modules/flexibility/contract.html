@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>flexibility.contract &#8212; flexibility 0.2alpha documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.2alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for flexibility.contract</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="c1">#from . import scheduling, analysis</span>
+
+<div class="viewcode-block" id="Contract"><a class="viewcode-back" href="../../contract.html#flexibility.contract.Contract">[docs]</a><span class="k">class</span> <span class="nc">Contract</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Contracts are encoded here and assigned to assets</span>
+
+<span class="sd">    Currently must be assigned and calculated manually, could also be triggered by asset.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">analysis</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span> <span class="o">=</span> <span class="n">analysis</span>
+
+<div class="viewcode-block" id="Contract.calc_da_contract_obligations"><a class="viewcode-back" href="../../contract.html#flexibility.contract.Contract.calc_da_contract_obligations">[docs]</a>    <span class="k">def</span> <span class="nf">calc_da_contract_obligations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contract</span><span class="o">=</span><span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="n">list_of_contracts</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the run schedule and payments to customer</span>
+<span class="sd">        Based on a contract and certain market data, gas and N2EX prices</span>
+<span class="sd">        in the case of AMP, the customer is entitled to a certain payment.</span>
+<span class="sd">        This payment is calculated by assuming a certain engine operating</span>
+<span class="sd">        regime. This regime serves to calculate the operating profits and</span>
+<span class="sd">        capacity payments.</span>
+<span class="sd">        Contracts:</span>
+<span class="sd">        - amp:</span>
+<span class="sd">            - Run if operation appears profitable with a margin of 1 GBP based on the heren DA index price and the N2EX price.</span>
+<span class="sd">            - 90% of the resulting profit are passed on to the customer, 10%</span>
+<span class="sd">                are retained by DONG. The actual profit for DONG is given by the actual day ahead operation minus the share given to AMP</span>
+
+<span class="sd">        - shaw:</span>
+<span class="sd">            - Trade power on the N2EX as governed by the da schedule.</span>
+<span class="sd">            - All profits are kept.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            contract (str): The type of contract.</span>
+<span class="sd">            list_of_contracts (bool): If true does not calculate anything but</span>
+<span class="sd">                prints a list of contracts encoded.</span>
+<span class="sd">            kwargs:</span>
+<span class="sd">                - stochastic (pd.Series) or (float): With the index of self.data.data</span>
+<span class="sd">                    this pd.Series is added to the profit of da operations.</span>
+<span class="sd">                    Example: So a 1.96 std increase of the da cost is:</span>
+<span class="sd">                        -1.96*self.data.data[&#39;gas_da&#39;].std()</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">contracts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="s1">&#39;shaw&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">list_of_contracts</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Contracts encoded: &#39;</span><span class="p">,</span><span class="n">contracts</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">contract</span> <span class="o">==</span> <span class="s1">&#39;amp&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">schedules</span><span class="o">.</span><span class="n">set_da_schedule</span><span class="p">(</span><span class="s1">&#39;amp&#39;</span><span class="p">,</span><span class="n">contract</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">market</span> <span class="o">=</span> <span class="s1">&#39;da&#39;</span><span class="p">)</span>
+
+            <span class="c1">#if type(self.analysis.data.data[&#39;schedule&#39;, &#39;final&#39;][0]) is not str:</span>
+            <span class="c1">#    print(&#39;Remember to update the capacity charge&#39;)</span>
+
+            <span class="c1"># GBP/MWH</span>
+            <span class="n">profit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_da&#39;</span><span class="p">]</span>\
+                    <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;gas_da&#39;</span><span class="p">]</span>\
+                    <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_export&#39;</span><span class="p">]</span>\
+                    <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_co2&#39;</span><span class="p">]</span>
+
+            <span class="n">money_contract</span> <span class="o">=</span> <span class="n">profit</span>\
+                   <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_contract&#39;</span><span class="p">]</span>\
+                   <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">timestep</span> <span class="o">/</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="s1">&#39;1h&#39;</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="s1">&#39;stochastic&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">profit</span> <span class="o">+=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;stochastic&#39;</span><span class="p">]</span>
+
+
+            <span class="n">money_real</span> <span class="o">=</span> <span class="n">profit</span>\
+                   <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_da&#39;</span><span class="p">]</span>\
+                   <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">timestep</span> <span class="o">/</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="s1">&#39;1h&#39;</span><span class="p">))</span>
+
+            <span class="c1"># remove -0.000, error is raised if actual negatives excists</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">money_contract</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="c1">#pdb.set_trace()</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Something went wrong in the profit calculations&#39;</span><span class="p">)</span>
+            <span class="n">money_contract</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">money_contract</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;payment_da&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.9</span><span class="o">*</span><span class="n">money_contract</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;profit_da&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">money_real</span><span class="o">-</span><span class="mf">0.9</span><span class="o">*</span><span class="n">money_contract</span>
+
+        <span class="k">elif</span> <span class="n">contract</span> <span class="o">==</span> <span class="s1">&#39;shaw&#39;</span><span class="p">:</span>
+            <span class="c1"># Just simple difference between charging and discharging times and prices</span>
+            <span class="c1"># export_rev = (self.analysis.data.data[&#39;reward&#39;, &#39;da&#39;]-self.analysis.data.data[&#39;cost&#39;,&#39;da&#39;]*(self.analysis.data.data[&#39;schedule&#39;, &#39;da&#39;] &gt; 0)</span>
+            <span class="c1"># import_rev</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;profit_da&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_da&#39;</span><span class="p">]</span>\
+            <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_da&#39;</span><span class="p">]</span>
+            <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_export&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_da&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_import&#39;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_da&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="o">+</span><span class="mi">0</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_da&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>\
+            <span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">timestep</span> <span class="o">/</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="s1">&#39;1h&#39;</span><span class="p">))</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;payment_da&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span></div>
+ 
+<div class="viewcode-block" id="Contract.calc_capacity_payment"><a class="viewcode-back" href="../../contract.html#flexibility.contract.Contract.calc_capacity_payment">[docs]</a>    <span class="k">def</span> <span class="nf">calc_capacity_payment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">charge</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">monthly</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Accuratly calculate the capacity payment.</span>
+
+<span class="sd">        Calculate the capacity payment, considering monthly</span>
+<span class="sd">        minimum requirements as well as overflows from previous months.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            charge (float): The charge for devation from the da schedule</span>
+<span class="sd">            monthly (bool): Is the capacity payment settled on a monthly bases.</span>
+<span class="sd">                Default is False. NOT IMPLIMENTED YET</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">deviation</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_contract&#39;</span><span class="p">]</span>
+            <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_wd&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;payment_deviation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deviation</span><span class="o">*</span><span class="n">charge</span></div>
+
+
+<div class="viewcode-block" id="Contract.calc_imbalance_revenue"><a class="viewcode-back" href="../../contract.html#flexibility.contract.Contract.calc_imbalance_revenue">[docs]</a>    <span class="k">def</span> <span class="nf">calc_imbalance_revenue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;amp&#39;</span><span class="p">,</span><span class="n">rev_split</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span><span class="n">equal_split</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">run_time</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate and share the imbalance revenue</span>
+
+<span class="sd">        Profits are devided according to the split, losses covered by DONG:</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            method (str): Name of the method used to compute the imbalance revenue</span>
+<span class="sd">                - &#39;amp&#39;: for a  generator where imbalance is the deviation from the within day schedule. With generation cost.</span>
+<span class="sd">                - &#39;battery&#39;: For battery or other asset, buying and selling only on the SIP, without generation cost. </span>
+<span class="sd">            rev_split (float): Share of imbalance revenue retained</span>
+<span class="sd">                        by dong, must be between 0 and 1, defaults to 0.5.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1">#MW</span>
+        <span class="n">change_for_imba</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_final_imba&#39;</span><span class="p">]</span>\
+                        <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_wd&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;amp&#39;</span><span class="p">:</span>
+            <span class="c1">#GBP</span>
+            <span class="c1">#import pdb; pdb.set_trace()</span>
+
+            <span class="n">imba_revenue</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_sip_imba&#39;</span><span class="p">]</span> <span class="o">+</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_co2&#39;</span><span class="p">]</span> 
+                          <span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;gas_wd&#39;</span><span class="p">]</span>
+                           <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_sip_imba&#39;</span><span class="p">]</span>
+                            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_export&#39;</span><span class="p">]</span>
+                             <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_co2&#39;</span><span class="p">])</span>
+                             <span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_export&#39;</span><span class="p">]</span> 
+                            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;gas_wd&#39;</span><span class="p">])</span>\
+                             <span class="o">*</span> <span class="n">change_for_imba</span>\
+                             <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">timestep</span><span class="o">/</span><span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="s1">&#39;1h&#39;</span><span class="p">))</span>
+
+            <span class="c1"># imba_revenue = (self.analysis.data.data[&#39;el_sip_imba&#39;] </span>
+            <span class="c1">#               - self.analysis.data.data[&#39;el_co2&#39;] </span>
+            <span class="c1">#               - self.analysis.data.data[&#39;gas_wd&#39;]</span>
+            <span class="c1">#               - self.analysis.data.data[&#39;el_export&#39;]</span>
+            <span class="c1">#               - self.analysis.data.data[&#39;gas_wd&#39;])\</span>
+            <span class="c1">#                  * change_for_imba\</span>
+            <span class="c1">#                  * (self.analysis.data.timestep/pd.Timedelta(&#39;1h&#39;))</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;battery&#39;</span><span class="p">:</span>
+            <span class="n">imba_revenue</span> <span class="o">=</span> <span class="n">change_for_imba</span><span class="o">*</span>\
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_sip_imba&#39;</span><span class="p">]</span>\
+            <span class="o">+</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_final_imba&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;el_export&#39;</span><span class="p">]</span>
+            <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule_final_imba&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;im_export&#39;</span><span class="p">])</span>\
+            <span class="o">*</span><span class="p">(</span><span class="n">run_time</span><span class="o">/</span><span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="s1">&#39;60min&#39;</span><span class="p">))</span>
+
+
+        <span class="c1"># Profitable only is shared:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">equal_split</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;payment_imba&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">imba_revenue</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">rev_split</span><span class="p">))</span>\
+                                                            <span class="o">*</span><span class="p">(</span><span class="n">imba_revenue</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;profit_imba&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imba_revenue</span><span class="o">*</span><span class="n">rev_split</span><span class="o">*</span><span class="p">(</span><span class="n">imba_revenue</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>\
+                                                        <span class="o">+</span> <span class="n">imba_revenue</span><span class="o">*</span><span class="p">(</span><span class="n">imba_revenue</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;payment_imba&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imba_revenue</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">rev_split</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;profit_imba&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imba_revenue</span><span class="o">*</span><span class="n">rev_split</span></div></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Does nothing if not imported&#39;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../asset.html">Asset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../analysis.html">Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scheduling.html">Scheduling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../data.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contract.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contrib_guide.html">Contribution guide</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, DONG Energy.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

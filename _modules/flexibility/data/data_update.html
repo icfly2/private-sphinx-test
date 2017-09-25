@@ -1,0 +1,334 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>flexibility.data.data_update &#8212; flexibility 0.2alpha documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.2alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for flexibility.data.data_update</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/python</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The data for the flexibility analysis is controlled from this module.</span>
+
+<span class="sd">To call or interface with the database stoding the WD data, which is</span>
+<span class="sd">stored in in a hdf5 file call WD_update to update the data.</span>
+
+<span class="sd">Attributes:</span>
+<span class="sd">    network_location (str): String of the network location, on the DONG network.</span>
+<span class="sd">    requires an access permission.</span>
+<span class="sd">    store_colation (str): Location and name of the hdf5 file.</span>
+
+
+<span class="sd">Arguments:</span>
+<span class="sd">    run (string): Run the updating script. May be slow.</span>
+
+<span class="sd">    check (string): Print the last stored file. Yesterday is</span>
+<span class="sd">    the last day that can be pulled.</span>
+
+<span class="sd">    help: (string): This help file.</span>
+
+<span class="sd">    upload (string): Run the git commit and upload. NOT IMPLIMENTED</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">shutil</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">network_location</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;//CSI00829&#39;</span><span class="p">,</span><span class="s1">&#39;ApxIntradayOrderBook&#39;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;The network location is: \\CSI00829\ApxIntradayOrderBook</span>
+
+<span class="sd">Use the map network drive functionability to access it.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="WD_update"><a class="viewcode-back" href="../../../data.html#flexibility.data.data_update.WD_update">[docs]</a><span class="k">def</span> <span class="nf">WD_update</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Crawls the nework drive for files, identifies the new files and pulls</span>
+<span class="sd">    them into Intraday_data.h5</span>
+
+<span class="sd">    This is a simple update script that could do with some improvements:</span>
+<span class="sd">    - Not crawl all the directory as it is very slow</span>
+<span class="sd">    - Store the database offline on a network drive for better security and</span>
+<span class="sd">    faster commits after updates.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raise:</span>
+<span class="sd">        Warning: the filename of any csv file that could not be read. Safe to ignore if rare.</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># crawl the network drive to get all the file sin the drive</span>
+    <span class="c1"># very slow</span>
+    <span class="n">all_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">subdirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">network_location</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">all_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+
+
+    <span class="c1"># Initialise stuff</span>
+    <span class="n">yesterday</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2000-01-01&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">store_location</span><span class="p">)</span> <span class="k">as</span> <span class="n">store</span><span class="p">:</span>
+        <span class="c1"># load where we left off</span>
+        <span class="k">if</span> <span class="s1">&#39;/last_file&#39;</span> <span class="ow">in</span> <span class="n">store</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">last_file</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="s1">&#39;last_file&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">last_file</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="s1">&#39;/df_all_first&#39;</span> <span class="ow">in</span> <span class="n">store</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">df_all_first</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="s1">&#39;df_all_first&#39;</span><span class="p">]</span>
+            <span class="n">df_all_last</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="s1">&#39;df_all_last&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df_all_first</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span>
+            <span class="s2">&quot;Desc1&quot;</span><span class="p">,</span><span class="s2">&quot;Desc2&quot;</span><span class="p">,</span><span class="s2">&quot;Type&quot;</span><span class="p">,</span><span class="s2">&quot;Price&quot;</span><span class="p">,</span><span class="s2">&quot;Volume&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;zero_one_two&quot;</span><span class="p">,</span><span class="s2">&quot;start_time&quot;</span><span class="p">,</span><span class="s2">&quot;end_time&quot;</span><span class="p">,</span><span class="s1">&#39;first_available&#39;</span><span class="p">])</span>
+            <span class="n">df_all_first</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;ID&#39;</span>
+            <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;Desc1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;Desc1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
+            <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;Desc2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;Desc2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
+            <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;Type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;Type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
+            <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;Price&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;Price&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;Volume&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;Volume&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;zero_one_two&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;zero_one_two&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+            <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;start_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;start_time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+            <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;end_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="s2">&quot;end_time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+            <span class="n">df_all_first</span><span class="p">[</span><span class="s1">&#39;first_available&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="s1">&#39;first_available&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+
+            <span class="n">df_all_last</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">df_all_last</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;first_available&#39;</span><span class="p">:</span><span class="s1">&#39;last_available&#39;</span><span class="p">},</span>
+                            <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">all_files</span><span class="p">[</span><span class="n">last_file</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="n">time_available</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">14</span><span class="p">],</span> <span class="n">infer_datetime_format</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">today</span> <span class="o">=</span> <span class="n">time_available</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+        <span class="n">date_to_disk</span> <span class="o">=</span> <span class="n">today</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="s1">&#39;2day&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">today</span> <span class="o">&gt;</span> <span class="n">yesterday</span><span class="p">:</span>
+            <span class="n">yesterday</span> <span class="o">=</span> <span class="n">today</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Completed &#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">yesterday</span><span class="p">))</span>
+
+        <span class="c1"># read in all orders</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">df_read</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">network_location</span><span class="p">,</span><span class="n">f</span><span class="p">),</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;cp1252&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                             <span class="n">usecols</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">],</span>
+                                             <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Desc1&quot;</span><span class="p">,</span><span class="s2">&quot;Desc2&quot;</span><span class="p">,</span><span class="s2">&quot;Type&quot;</span><span class="p">,</span><span class="s2">&quot;Price&quot;</span><span class="p">,</span><span class="s2">&quot;Volume&quot;</span><span class="p">,</span> <span class="s2">&quot;ID&quot;</span><span class="p">,</span>
+                                                    <span class="s2">&quot;zero_one_two&quot;</span><span class="p">,</span><span class="s2">&quot;start_time&quot;</span><span class="p">,</span><span class="s2">&quot;end_time&quot;</span><span class="p">],</span>
+                                             <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="n">skipfooter</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># change string to time date</span>
+            <span class="n">df_read</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df_read</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">])</span>
+            <span class="n">df_read</span><span class="p">[</span><span class="s1">&#39;end_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df_read</span><span class="p">[</span><span class="s1">&#39;end_time&#39;</span><span class="p">])</span>
+
+
+            <span class="c1"># set initial availability (will be renamed)</span>
+            <span class="n">df_read</span><span class="p">[</span><span class="s1">&#39;first_available&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time_available</span>
+            <span class="n">df_read</span><span class="p">[</span><span class="s1">&#39;first_available&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_read</span><span class="p">[</span><span class="s1">&#39;first_available&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+
+            <span class="c1">#set ID as index</span>
+            <span class="n">df_read</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;ID&#39;</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+
+            <span class="n">df_all_first</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_read</span><span class="p">)</span>
+            <span class="n">df_all_first</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="o">~</span><span class="n">df_all_first</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)]</span>
+            <span class="c1">#.drop_duplicates(keep=&#39;first&#39;,inplace=True,subset=&#39;ID&#39;)</span>
+
+            <span class="n">df_read</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;first_available&#39;</span><span class="p">:</span><span class="s1">&#39;last_available&#39;</span><span class="p">},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">df_all_last</span> <span class="o">=</span> <span class="n">df_all_last</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_read</span><span class="p">)</span>
+            <span class="n">df_all_last</span> <span class="o">=</span> <span class="n">df_all_last</span><span class="p">[</span><span class="o">~</span><span class="n">df_all_last</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;last&#39;</span><span class="p">)]</span>
+
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_all_first</span><span class="p">[</span><span class="n">df_all_first</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">today</span><span class="p">]):</span>
+                <span class="c1"># there are orders that started yesterday, thus there trading is definitly completed!</span>
+                <span class="n">df_to_disk</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                            <span class="p">[</span><span class="n">df_all_first</span><span class="p">[</span><span class="n">df_all_first</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">today</span><span class="p">],</span>
+                             <span class="n">df_all_last</span><span class="p">[</span><span class="n">df_all_last</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">today</span><span class="p">][</span><span class="s1">&#39;last_available&#39;</span><span class="p">]],</span>
+                             <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># cut those written to disk</span>
+                <span class="n">df_all_first</span><span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="n">df_all_first</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">today</span><span class="p">]</span>
+                <span class="n">df_all_last</span> <span class="o">=</span> <span class="n">df_all_last</span><span class="p">[</span><span class="n">df_all_last</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">today</span><span class="p">]</span>
+
+                <span class="c1"># save state</span>
+                <span class="c1"># ensure correct data types</span>
+                <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;Desc1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;Desc1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
+                <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;Desc2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;Desc2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
+                <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;Type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;Type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
+                <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;Price&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;Price&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+                <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;Volume&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;Volume&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+                <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;zero_one_two&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;zero_one_two&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+                <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;start_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;start_time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+                <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;end_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="p">[</span><span class="s2">&quot;end_time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+                <span class="n">df_to_disk</span><span class="p">[</span><span class="s1">&#39;first_available&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="p">[</span><span class="s1">&#39;first_available&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+                <span class="n">df_to_disk</span><span class="p">[</span><span class="s1">&#39;last_available&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="p">[</span><span class="s1">&#39;last_available&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+
+
+                <span class="n">df_to_disk</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">df_to_disk</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">store_location</span><span class="p">)</span> <span class="k">as</span> <span class="n">store</span><span class="p">:</span>
+                    <span class="n">store</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;APX_orderbook&#39;</span><span class="p">,</span>
+                               <span class="n">df_to_disk</span><span class="p">,</span>
+                               <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">,</span>
+                               <span class="n">data_columns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">append</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">min_itemsize</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Desc2&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span><span class="s1">&#39;Desc1&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">})</span>
+                    <span class="n">store</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;df_all_first&#39;</span><span class="p">,</span>
+                                <span class="n">df_all_first</span><span class="p">,</span>
+                                <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">,</span>
+                                <span class="n">data_columns</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">store</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;df_all_last&#39;</span><span class="p">,</span>
+                            <span class="n">df_all_last</span><span class="p">,</span><span class="nb">format</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">,</span>
+                            <span class="n">data_columns</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">store</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;last_file&#39;</span><span class="p">,</span>
+                                <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">last_file</span><span class="o">+</span><span class="n">i</span><span class="p">),</span>
+                                <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Trouble: &quot;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">__doc_string__</span><span class="p">():</span>
+    <span class="n">doc_string</span> <span class="o">=</span>\
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This script requires an argument.</span>
+
+<span class="sd">    args:</span>
+<span class="sd">        run (string): Run the updating script. May be slow.</span>
+
+<span class="sd">        check (string): Print the last stored file. Yesterday is</span>
+<span class="sd">        the last day that can be pulled.</span>
+
+<span class="sd">        help: (string): This help file.</span>
+
+<span class="sd">        upload (string): Run the git commit and upload. NOT IMPLIMENTED</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">doc_string</span>
+
+<div class="viewcode-block" id="WD_data_check"><a class="viewcode-back" href="../../../data.html#flexibility.data.data_update.WD_data_check">[docs]</a><span class="k">def</span> <span class="nf">WD_data_check</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Check within day database.</span>
+
+
+<span class="sd">    This function checks the date of the last date entry and location of the</span>
+<span class="sd">    WD data base.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        No arguments</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        date_of_last_line (pd.DateTime): Date (dd-mm-yyyy) of the latest entry.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">store_location</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span><span class="s1">&#39;Intraday_data.h5&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">HDFStore</span><span class="p">(</span><span class="n">store_location</span><span class="p">)</span> <span class="k">as</span> <span class="n">store</span><span class="p">:</span>
+        <span class="n">df_all_first</span> <span class="o">=</span> <span class="n">store</span><span class="p">[</span><span class="s1">&#39;df_all_first&#39;</span><span class="p">]</span>
+
+    <span class="n">date_of_last_line</span> <span class="o">=</span> <span class="n">df_all_first</span><span class="p">[</span><span class="s1">&#39;end_time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">date_of_last_line</span></div>
+
+
+<span class="c1"># make it import safe</span>
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;run&#39;</span><span class="p">:</span>
+            <span class="n">WD_update</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The date of the last entry in the database is: &#39;</span><span class="p">,</span> <span class="n">WD_data_check</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;check&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The date of the last entry in the database is: &#39;</span><span class="p">,</span> <span class="n">WD_data_check</span><span class="p">())</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The database can be found at: &#39;</span><span class="p">,</span><span class="n">store_location</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;help&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="vm">__doc__</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">__doc_string__</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;git&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Not yet implimented&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">__doc_string__</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># print help file</span>
+        <span class="nb">print</span><span class="p">(</span><span class="vm">__doc__</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">__doc_string__</span><span class="p">())</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../asset.html">Asset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scheduling.html">Scheduling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../data.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contract.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contrib_guide.html">Contribution guide</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, DONG Energy.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
