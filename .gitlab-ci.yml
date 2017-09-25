@@ -1,0 +1,12 @@
+pages:
+  stage: deploy
+  script:
+  - mkdir -p .public/<hash-value>
+  - mv password.html .public/index.html
+  - cp -r * .public/<hash-value>
+  - mv .public public
+  artifacts:
+    paths:
+    - public
+  only:
+  - master
