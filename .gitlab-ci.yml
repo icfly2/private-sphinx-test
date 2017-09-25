@@ -1,9 +1,9 @@
 pages:
   stage: deploy
   script:
-  - mkdir -p .public/<hash-value>
+  - mkdir -p .public/48181acd22b3edaebc8a447868a7df7ce629920a
   - mv password.html .public/index.html
-  - cp -r * .public/<hash-value>
+  - cp -r * .public/48181acd22b3edaebc8a447868a7df7ce629920a
   - mv .public public
   artifacts:
     paths:
