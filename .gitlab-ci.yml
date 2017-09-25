@@ -2,8 +2,8 @@ pages:
   stage: deploy
   script:
   - mkdir -p .public/48181acd22b3edaebc8a447868a7df7ce629920a
-  - mv password.html .public/index.html
-  - cp -r * .public/48181acd22b3edaebc8a447868a7df7ce629920a
+  - mv doc/.build/html/password.html .public/index.html
+  - cp -r doc/.build/html/* .public/48181acd22b3edaebc8a447868a7df7ce629920a
   - mv .public public
   artifacts:
     paths:
