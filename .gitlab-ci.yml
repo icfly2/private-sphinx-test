@@ -1,3 +1,5 @@
+
+image: tsgkadot/sphinx-plantuml
 pages:
   stage: deploy
   script:
