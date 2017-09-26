@@ -9,11 +9,10 @@ Private-docs-test
 
 :Author:
    Ruben Menke
-   *rmenk@dongenergy.dk*
 :Release: |release|
 :Date: |today|
 
-*Private-docs-test* is a module tp test how to set up private (password restricted) documentation for a gitlab repo using sphinx and gitlab pages.
+*Private-docs-test* is a module to test how to set up private (password restricted) documentation for a gitlab repo using sphinx and gitlab pages.
 
 It uses a modified conf.py to generate a global toc tree, which is much nicer than the local one. 
 
