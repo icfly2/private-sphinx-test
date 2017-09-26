@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Analysis &#8212; flexibility 0.2alpha documentation</title>
+    <title>Analysis &#8212; private-docs 0.1alpha documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.2alpha',
+        VERSION:     '0.1alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,11 +25,10 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Scheduling" href="scheduling.html" />
-    <link rel="prev" title="Asset" href="asset.html" />
+    <link rel="next" title="Contribution guide" href="contrib_guide.html" />
+    <link rel="prev" title="Private-docs-test" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -47,74 +46,7 @@
             
   <div class="section" id="analysis">
 <h1>Analysis<a class="headerlink" href="#analysis" title="Permalink to this headline">¶</a></h1>
-<p>The <cite>analysis</cite> module is used to analyse an asset.
-It loads the data and scheduling methods defined in the
-<a class="reference internal" href="data.html"><span class="doc">Data</span></a> and <a class="reference internal" href="scheduling.html"><span class="doc">Scheduling</span></a> modules.</p>
-<dl class="class">
-<dt id="flexibility.analysis.Analysis">
-<em class="property">class </em><code class="descclassname">flexibility.analysis.</code><code class="descname">Analysis</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexibility/analysis.html#Analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flexibility.analysis.Analysis" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load historical data and analyse asset performance.</p>
-<p>Optionally set new to the name of a predefined asset to define
-the asset on initialisation.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>new</strong> (<em>string</em>) &#8211; Name of the new asset, which must already excisit in</li>
-<li><strong>database. Providing this name calls set_asset.</strong> (<em>the</em>) &#8211; </li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Examples</p>
-<p>Create and set an asset as amp and send it for analysis:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">flexibility</span> <span class="k">as</span> <span class="nn">fl</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">amp</span> <span class="o">=</span> <span class="n">fl</span><span class="o">.</span><span class="n">Asset</span><span class="p">(</span><span class="s1">&#39;amp&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Analysis</span><span class="p">(</span><span class="n">asset</span><span class="o">=</span><span class="n">amp</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Or do this in one operation:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">fl</span><span class="o">.</span><span class="n">Analysis</span><span class="p">(</span><span class="n">asset_name</span><span class="o">=</span><span class="s1">&#39;amp&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="method">
-<dt id="flexibility.analysis.Analysis.financial_summary">
-<code class="descname">financial_summary</code><span class="sig-paren">(</span><em>detailed=False</em>, <em>no_print=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexibility/analysis.html#Analysis.financial_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flexibility.analysis.Analysis.financial_summary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Print key figures and findings:</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>detailed</strong> (<em>bool</em>) &#8211; Default False, True not implimented yet</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="flexibility.analysis.Analysis.find_optimal_imbalance_settings">
-<code class="descname">find_optimal_imbalance_settings</code><span class="sig-paren">(</span><em>no_print=False</em>, <em>detailed=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexibility/analysis.html#Analysis.find_optimal_imbalance_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flexibility.analysis.Analysis.find_optimal_imbalance_settings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Crude grid search to find the best window and margins</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="flexibility.analysis.Analysis.trading_summary">
-<code class="descname">trading_summary</code><span class="sig-paren">(</span><em>detailed=False</em>, <em>no_print=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexibility/analysis.html#Analysis.trading_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flexibility.analysis.Analysis.trading_summary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Display a summary of trading activity</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>detailed</strong> (<em>bool</em>) &#8211; Default False, True witll plot some a distribution of the workload</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
+<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?&#8221;</p>
 </div>
 
 
@@ -125,12 +57,7 @@ the asset on initialisation.</p>
         <div class="sphinxsidebarwrapper">
 <h3><a href="index.html">Table Of Contents</a></h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="asset.html">Asset</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scheduling.html">Scheduling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contract.html">Contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contrib_guide.html">Contribution guide</a></li>
 </ul>
 
@@ -156,7 +83,7 @@ the asset on initialisation.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, DONG Energy.
+      &copy;MIT.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>

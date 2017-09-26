@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>flexibility &#8212; flexibility 0.2alpha documentation</title>
+    <title>Private-docs-test &#8212; private-docs 0.1alpha documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.2alpha',
+        VERSION:     '0.1alpha',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,10 +25,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Introduction" href="introduction.html" />
+    <link rel="next" title="Analysis" href="analysis.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -44,9 +43,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <a class="reference internal image-reference" href="_images/Dong-Energy.png"><img alt="_images/Dong-Energy.png" class="align-right" src="_images/Dong-Energy.png" style="width: 200.0px; height: 66.4px;" /></a>
-<div class="section" id="flexibility">
-<h1>flexibility<a class="headerlink" href="#flexibility" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="private-docs-test">
+<h1>Private-docs-test<a class="headerlink" href="#private-docs-test" title="Permalink to this headline">¶</a></h1>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -54,69 +52,28 @@
 <tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Ruben Menke
 <em>rmenk&#64;dongenergy.dk</em></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Release:</th><td class="field-body">0.2alpha</td>
+<tr class="field-even field"><th class="field-name">Release:</th><td class="field-body">0.1alpha</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Date:</th><td class="field-body">Aug 31, 2017</td>
+<tr class="field-odd field"><th class="field-name">Date:</th><td class="field-body">Sep 26, 2017</td>
 </tr>
 </tbody>
 </table>
-<p><em>flexibility</em> is a module containing a collection of scripts and data sources to
-analyse flexibility in the power market. For a look through the documentation
-have a look here:</p>
+<p><em>Private-docs-test</em> is a module tp test how to set up private (password restricted) documentation for a gitlab repo using sphinx and gitlab pages.</p>
+<p>It uses a modified conf.py to generate a global toc tree, which is much nicer than the local one.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="asset.html">Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scheduling.html">Scheduling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contract.html">Contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contrib_guide.html">Contribution guide</a></li>
 </ul>
 </div>
 <div class="section" id="aims">
 <h2>Aims<a class="headerlink" href="#aims" title="Permalink to this headline">¶</a></h2>
-<p>The aim of the module is to provide a framework to collect the different types
-of analyses that are regularly performed when assessing the performance of
-flexibility assets. This means that the focus is on providing an easy access to
-parsed and correct data for the various input sources and shortcuts to invoke
-often needed calculations.</p>
+<p>The aim of the module is to show case various things.</p>
 </div>
-<div class="section" id="quick-start">
-<h2>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
-<p>In a jupyter notebook do this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">flexibility</span>
-
-<span class="c1">#load a predefined asset:</span>
-<span class="n">amp</span> <span class="o">=</span> <span class="n">flexibility</span><span class="o">.</span><span class="n">asset</span><span class="o">.</span><span class="n">Asset</span><span class="p">(</span><span class="s1">&#39;amp&#39;</span><span class="p">)</span>
-
-<span class="c1"># Pass the asset definition to the analysis</span>
-<span class="n">analysis</span> <span class="o">=</span> <span class="n">flexibility</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">Analysis</span><span class="p">(</span><span class="n">asset</span> <span class="o">=</span> <span class="n">amp</span><span class="p">)</span>
-
-<span class="c1"># run day ahead schedule</span>
-<span class="n">analysis</span><span class="o">.</span><span class="n">schedules</span><span class="o">.</span><span class="n">set_da_schedule</span><span class="p">(</span><span class="s1">&#39;amp&#39;</span><span class="p">)</span>
-
-<span class="c1"># Let&#39;s not bother trading on the intraday market</span>
-<span class="n">analysis</span><span class="o">.</span><span class="n">schedules</span><span class="o">.</span><span class="n">set_wd_schedule</span><span class="p">(</span><span class="s1">&#39;lazy&#39;</span><span class="p">)</span>
-
-<span class="c1"># Let&#39;s use the realistic simulation of operation in the imbalance</span>
-<span class="n">analysis</span><span class="o">.</span><span class="n">schedules</span><span class="o">.</span><span class="n">set_imba_schedule</span><span class="p">(</span><span class="s1">&#39;realistic&#39;</span><span class="p">)</span>
-
-<span class="c1"># Let&#39;s have a look at the results so far</span>
-<span class="n">analysis</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;schedule&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
+<div class="section" id="some-text">
+<h2>Some text<a class="headerlink" href="#some-text" title="Permalink to this headline">¶</a></h2>
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 </div>
-<p>This should give you a pandas dataframe with an overview of the schedule. The
-schedule is the list of power settings sent to the asset.
-The <cite>da</cite> is the day ahead schedule, so the schedule after we sold power on the
-day ahead market.
-<cite>wd</cite> is the withinday or intraday market, which we skipped so it should be the
-same as the day ahead. The final schedule is the one that actually ran, and
-includes our actions from the imbalance market. Have a look at the introduction
-for more information and examples.</p>
-<span class="target" id="module-flexibility"></span></div>
 <div class="section" id="indices-and-tables">
 <h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -135,12 +92,7 @@ for more information and examples.</p>
         <div class="sphinxsidebarwrapper">
 <h3><a href="#">Table Of Contents</a></h3>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="asset.html">Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scheduling.html">Scheduling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contract.html">Contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contrib_guide.html">Contribution guide</a></li>
 </ul>
 
@@ -166,7 +118,7 @@ for more information and examples.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, DONG Energy.
+      &copy;MIT.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
