@@ -6,7 +6,10 @@ Improvements to the password protection by using a different method or what ever
 
 The basic functionallity should reman the same, a sphinx setup that build the docs as normal, and then a yaml file that build sthe docs and makes the arrangments to hide them. 
 
+
+
 ## Password:
 For this example the password is bob.
 
 Rename the folder as described in this repo (use the password.html file to generate the required hash.)
+https://github.com/matteobrusa/Password-protection-for-static-pages/blob/master/index.html
