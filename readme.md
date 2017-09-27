@@ -1,6 +1,8 @@
 # Intro
 This repo served as a testing ground and now as an example of how one could structure a repo and yaml file to use pipelines from gitlab to deploy gitlab pages automatically. These pages are hidden behind some crude password protection.
 
+https://rmenk.gitlab.io/private-sphinx-test/
+
 ## Contributions
 Improvements to the password protection by using a different method or what ever would be most welcome (I know very little about this subject, most was copied from various other repos to get this working, A dangerous combination in security research, I know.)
 
